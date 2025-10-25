@@ -8,8 +8,7 @@ using Microsoft.CodeAnalysis.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Models;
-using Restaurant.Midleware;
-
+using Restaurant.Middleware;
 namespace Restaurant
 {
     public class Program
@@ -56,8 +55,7 @@ namespace Restaurant
                 app.UseExceptionHandler("/Home/Error");
             }
             app.UseStaticFiles();
-            // app.UseMiddleware<Time>();
-            app.UseMiddleware<Totalpudgetof_mounth>();
+            app.UseMiddleware<Time>();
             app.UseRouting();
             app.UseAuthentication();
 

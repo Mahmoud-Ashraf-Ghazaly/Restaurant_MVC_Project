@@ -1,4 +1,4 @@
-﻿namespace Restaurant.Midleware
+﻿namespace Restaurant.Middleware
 {
     public class Time
     {
@@ -12,12 +12,36 @@
         public async Task InvokeAsync(HttpContext context)
         {
             var currentHour = DateTime.Now.Hour;
+            var path = context.Request.Path.Value?.ToLower();
 
-            // Block access between 8 PM (20:00) and 8 AM (08:00)
-            if (currentHour >= 20 || currentHour < 8)
+           
+            bool isOrderRequest = path != null && (
+                path.Contains("/order/create")||
+
+
+                (context.Request.Method == "POST" && path.Contains("/order"))
+            );
+
+           
+            if (isOrderRequest && (currentHour >= 20 || currentHour < 8))
             {
+           
+                if (context.Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                    context.Request.Headers["Accept"].ToString().Contains("application/json"))
+                {
+                    context.Response.StatusCode = 403;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync(@"{
+                        ""success"": false,
+                        ""message"": ""Sorry, ordering system is currently closed. Operating hours: 8:00 AM - 8:00 PM"",
+                        ""currentTime"": """ + DateTime.Now.ToString("hh:mm tt") + @"""
+                    }");
+                    return;
+                }
+
+                // For regular requests, show HTML page
                 context.Response.StatusCode = 403;
-                context.Response.ContentType = "text/html";
+                context.Response.ContentType = "text/html; charset=utf-8";
 
                 await context.Response.WriteAsync(@"
                     <!DOCTYPE html>
@@ -25,12 +49,12 @@
                     <head>
                         <meta charset='utf-8'>
                         <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-                        <title>Access Restricted</title>
+                        <title>Ordering System Closed</title>
                         <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>
                         <link href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css' rel='stylesheet'>
                         <style>
                             body {
-                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
                                 min-height: 100vh;
                                 display: flex;
                                 align-items: center;
@@ -58,7 +82,7 @@
                             }
                             .icon-wrapper {
                                 font-size: 80px;
-                                color: #dc3545;
+                                color: #f5576c;
                                 margin-bottom: 20px;
                                 animation: pulse 2s infinite;
                             }
@@ -84,8 +108,8 @@
                                 font-weight: 600;
                                 color: #495057;
                             }
-                            .btn-home {
-                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            .btn-back {
+                                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
                                 color: white;
                                 padding: 12px 40px;
                                 border-radius: 30px;
@@ -96,9 +120,9 @@
                                 margin-top: 20px;
                                 transition: all 0.3s ease;
                             }
-                            .btn-home:hover {
+                            .btn-back:hover {
                                 transform: translateY(-3px);
-                                box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+                                box-shadow: 0 10px 25px rgba(245, 87, 108, 0.4);
                                 color: white;
                             }
                         </style>
@@ -106,25 +130,28 @@
                     <body>
                         <div class='restriction-card'>
                             <div class='icon-wrapper'>
-                                <i class='bi bi-clock-history'></i>
+                                <i class='bi bi-basket-fill'></i>
                             </div>
-                            <h1>Access Restricted</h1>
-                            <p>Sorry, our restaurant system is closed during these hours</p>
+                            <h1>Ordering System Closed</h1>
+                            <p>Sorry, we cannot accept new orders at this time</p>
                             <div class='time-info'>
-                                <i class='bi bi-moon-stars'></i> Closed: 8:00 PM - 8:00 AM<br>
-                                <i class='bi bi-sun'></i> Open: 8:00 AM - 8:00 PM
+                                <i class='bi bi-moon-stars-fill'></i> Closed: 8:00 PM - 8:00 AM<br>
+                                <i class='bi bi-sun-fill'></i> Open: 8:00 AM - 8:00 PM
                             </div>
                             <p style='font-size: 0.95rem; color: #868e96;'>
                                 Current Time: " + DateTime.Now.ToString("hh:mm tt") + @"
                             </p>
                             <p style='font-size: 0.9rem; margin-top: 20px;'>
-                                Please come back during our operating hours
+                                You can browse our menu, but orders are currently unavailable
                             </p>
+                            <a href='/' class='btn-back'>
+                                <i class='bi bi-arrow-left'></i> Back to Home
+                            </a>
                         </div>
                     </body>
                     </html>
                 ");
-            
+
                 return;
             }
 
