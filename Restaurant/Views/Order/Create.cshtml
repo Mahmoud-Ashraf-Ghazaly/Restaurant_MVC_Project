@@ -1,0 +1,218 @@
+﻿@model Models.Order
+
+@{
+    ViewData["Title"] = "Create Order";
+    var menuItems = ViewBag.MenuItems as IEnumerable<Models.MenuItem>;
+}
+
+<div class="container py-4">
+    <h2 class="mb-4">
+        <i class="bi bi-cart-plus"></i> Create New Order
+    </h2>
+
+    @if (ViewBag.HappyHourMessage != null)
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-gift"></i> @ViewBag.HappyHourMessage
+        </div>
+    }
+
+    <form asp-action="Create" method="post" id="orderForm">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5>Customer Information</h5>
+                    </div>
+                    @* <input type="hidden" name="@Model.userId" value="@ViewBag.UserId" /> *@
+                    <input type="hidden" asp-for="userId" />
+
+                    <div class="card-body">
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CustomerName" class="form-label">Name *</label>
+                                <input asp-for="CustomerName" class="form-control" required />
+                                <span asp-validation-for="CustomerName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CustomerPhone" class="form-label">Phone *</label>
+                                <input asp-for="CustomerPhone" class="form-control" required />
+                                <span asp-validation-for="CustomerPhone" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="CustomerEmail" class="form-label">Email</label>
+                            <input asp-for="CustomerEmail" class="form-control" type="email" />
+                            <span asp-validation-for="CustomerEmail" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="OrderType" class="form-label">Order Type *</label>
+                            <select asp-for="OrderType" class="form-select" id="orderTypeSelect">
+                                <option value="0">Dine In</option>
+                                <option value="1">Delivery</option>
+                                <option value="2">Takeout</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="deliveryAddressDiv" ">
+                            <label asp-for="DeliveryAddress" class="form-label"> Address *</label>
+                            <textarea asp-for="DeliveryAddress" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="DeliveryAddress" class="text-danger"></span>
+                        </div>
+                      
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>Select Menu Items</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="orderItemsContainer">
+                            @if (menuItems != null && menuItems.Any())
+                            {
+                                foreach (var item in menuItems)
+                                {
+                                    <div class="form-check mb-3 p-3 border rounded">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-6">
+                                                <input class="form-check-input menu-item-checkbox" type="checkbox"
+                                                       name="menuItemIds" value="@item.Id" id="item_@item.Id">
+                                                <label class="form-check-label fw-bold" for="item_@item.Id">
+                                                    @item.Name - $@item.Price.ToString("F2")
+                                                </label>
+                                                <p class="text-muted small mb-0">@item.Description</p>
+                                                <span class="badge bg-info">@item.PreparationTimeMinutes min</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Quantity</label>
+                                                <input type="number" name="quantities" class="form-control quantity-input"
+                                                       min="1" value="1" disabled data-price="@item.Price">
+                                            </div>
+                                            <div class="col-md-3 text-end">
+                                                <strong class="item-subtotal">$0.00</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning">
+                                    No menu items available at the moment.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card position-sticky" style="top: 20px;">
+                    <div class="card-header bg-dark text-white">
+                        <h5>Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <strong id="subtotalAmount">$0.00</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax (8.5%):</span>
+                            <strong id="taxAmount">$0.00</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Discount:</span>
+                            <strong id="discountAmount">$0.00</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <h5>Total:</h5>
+                            <h5 id="totalAmount">$0.00</h5>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-check-circle"></i> Place Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // Show/hide delivery address based on order type
+        document.getElementById('orderTypeSelect').addEventListener('change', function() {
+            const deliveryDiv = document.getElementById('deliveryAddressDiv');
+            const deliveryAddress = document.querySelector('[name="DeliveryAddress"]');
+
+            if (this.value == '1') { // Delivery
+                deliveryDiv.style.display = 'block';
+                deliveryAddress.required = true;
+            } else {
+                deliveryDiv.style.display = 'none';
+                deliveryAddress.required = false;
+            }
+        });
+
+        // Enable/disable quantity input based on checkbox
+        document.querySelectorAll('.menu-item-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const row = this.closest('.form-check');
+                const quantityInput = row.querySelector('.quantity-input');
+                quantityInput.disabled = !this.checked;
+                if (!this.checked) {
+                    quantityInput.value = 1;
+                }
+                calculateTotals();
+            });
+        });
+
+        // Update totals when quantity changes
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('input', calculateTotals);
+        });
+
+        function calculateTotals() {
+            let subtotal = 0;
+
+            document.querySelectorAll('.menu-item-checkbox:checked').forEach(checkbox => {
+                const row = checkbox.closest('.form-check');
+                const quantityInput = row.querySelector('.quantity-input');
+                const price = parseFloat(quantityInput.dataset.price);
+                const quantity = parseInt(quantityInput.value) || 0;
+                const itemSubtotal = price * quantity;
+
+                row.querySelector('.item-subtotal').textContent = '$' + itemSubtotal.toFixed(2);
+                subtotal += itemSubtotal;
+            });
+
+            // Calculate discount
+            let discount = 0;
+            const currentHour = new Date().getHours();
+
+            // Happy hour (3 PM - 5 PM)
+            if (currentHour >= 15 && currentHour < 17) {
+                discount = subtotal * 0.20;
+            }
+
+            // Bulk discount (over $100)
+            if (subtotal > 100 && discount < subtotal * 0.10) {
+                discount = subtotal * 0.10;
+            }
+
+            const tax = (subtotal - discount) * 0.085;
+            const total = subtotal - discount + tax;
+
+            document.getElementById('subtotalAmount').textContent = '$' + subtotal.toFixed(2);
+            document.getElementById('discountAmount').textContent = '-$' + discount.toFixed(2);
+            document.getElementById('taxAmount').textContent = '$' + tax.toFixed(2);
+            document.getElementById('totalAmount').textContent = '$' + total.toFixed(2);
+        }
+
+        // Initialize
+        calculateTotals();
+    </script>
+}
+

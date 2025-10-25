@@ -1,0 +1,258 @@
+﻿@using Models
+@model Order
+
+@{
+    ViewData["Title"] = "Update Order Status";
+    var availableStatuses = ViewBag.AvailableStatuses as List<OrderStatus>;
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Back Button -->
+            <div class="mb-3">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Orders
+                </a>
+            </div>
+
+            <!-- Order Info Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-receipt me-2"></i>Order #@Model.Id
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless mb-0">
+                                <tr>
+                                    <td class="text-muted" width="40%">Customer:</td>
+                                    <td><strong>@Model.CustomerName</strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Phone:</td>
+                                    <td>@Model.CustomerPhone</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Order Type:</td>
+                                    <td>
+                                        @if (Model.OrderType == OrderType.DineIn)
+                                        {
+                                            <span class="badge bg-info">Dine In</span>
+                                        }
+                                        else if (Model.OrderType == OrderType.Takeout)
+                                        {
+                                            <span class="badge bg-warning text-dark">Takeout</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-primary">Delivery</span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless mb-0">
+                                <tr>
+                                    <td class="text-muted" width="40%">Order Date:</td>
+                                    <td>@Model.OrderDate.ToString("dd/MM/yyyy hh:mm tt")</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Items:</td>
+                                    <td>@Model.OrderItems.Count() items</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Total:</td>
+                                    <td><strong class="text-success">@Model.TotalAmount.ToString("C")</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Current Status -->
+                    <hr>
+                    <div class="text-center">
+                        <p class="text-muted mb-2">Current Status</p>
+                        <h3>
+                            @switch (Model.OrderStatus)
+                            {
+                                case OrderStatus.Pending:
+                                    <span class="badge bg-secondary fs-5 px-4 py-2">
+                                        <i class="fas fa-clock me-2"></i>Pending
+                                    </span>
+                                    break;
+                                case OrderStatus.Preparing:
+                                    <span class="badge bg-warning text-dark fs-5 px-4 py-2">
+                                        <i class="fas fa-fire me-2"></i>Preparing
+                                    </span>
+                                    break;
+                                case OrderStatus.Ready:
+                                    <span class="badge bg-success fs-5 px-4 py-2">
+                                        <i class="fas fa-check-circle me-2"></i>Ready
+                                    </span>
+                                    break;
+                                case OrderStatus.Delivered:
+                                    <span class="badge bg-info fs-5 px-4 py-2">
+                                        <i class="fas fa-truck me-2"></i>Delivered
+                                    </span>
+                                    break;
+                                case OrderStatus.Cancelled:
+                                    <span class="badge bg-danger fs-5 px-4 py-2">
+                                        <i class="fas fa-times-circle me-2"></i>Cancelled
+                                    </span>
+                                    break;
+                            }
+                        </h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Status Form -->
+            @if (availableStatuses != null && availableStatuses.Any())
+            {
+                <div class="card shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-edit me-2"></i>Update Status
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="UpdateStatus" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Select New Status</label>
+                                <div class="row g-3">
+                                    @foreach (var status in availableStatuses)
+                                    {
+                                        <div class="col-md-6">
+                                            <input class="btn-check" type="radio" name="newStatus"
+                                                   value="@((int)status)" id="status_@status" required>
+                                            <label class="btn btn-outline-primary w-100 p-0" for="status_@status">
+                                                <div class="card status-card h-100 border-0">
+                                                    <div class="card-body text-center py-4">
+                                                        @switch (status)
+                                                        {
+                                                            case OrderStatus.Preparing:
+                                                                <i class="fas fa-fire fa-3x text-warning mb-3"></i>
+                                                                <h5 class="mb-2">Preparing</h5>
+                                                                <small class="text-muted">Start preparing the order</small>
+                                                                break;
+                                                            case OrderStatus.Ready:
+                                                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                                                <h5 class="mb-2">Ready</h5>
+                                                                <small class="text-muted">Order is ready for pickup/delivery</small>
+                                                                break;
+                                                            case OrderStatus.Delivered:
+                                                                <i class="fas fa-truck fa-3x text-info mb-3"></i>
+                                                                <h5 class="mb-2">Delivered</h5>
+                                                                <small class="text-muted">Order has been delivered</small>
+                                                                break;
+                                                            case OrderStatus.Cancelled:
+                                                                <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                                                                <h5 class="mb-2">Cancelled</h5>
+                                                                <small class="text-muted">Cancel this order</small>
+                                                                break;
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Notes (Optional)</label>
+                                <textarea name="notes" class="form-control" rows="3"
+                                      placeholder="Add any notes about this status update..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i>Update Status
+                                </button>
+                                <a asp-action="Index" class="btn btn-outline-secondary">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>No status updates available</strong> - This order is in final state.
+                </div>
+                <a asp-action="Index" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Orders
+                </a>
+            }
+
+            <!-- Order Items -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Order Items
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-end">Price</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.OrderItems)
+                                {
+                                    <tr>
+                                        <td>@item.MenuItem.Name</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary">@item.Quantity</span>
+                                        </td>
+                                        <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                                        <td class="text-end fw-bold">@item.Subtotal.ToString("C")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .btn-check:checked + .btn-outline-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+            .btn-check:checked + .btn-outline-primary .card-body {
+                background-color: rgba(13, 110, 253, 0.1);
+            }
+
+        .btn-outline-primary:hover {
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .status-card {
+            cursor: pointer;
+        }
+    </style>
+}

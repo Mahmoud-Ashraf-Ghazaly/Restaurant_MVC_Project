@@ -1,0 +1,289 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<!-- Hero Section -->
+<section class="hero-section position-relative" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 600px;">
+    <div class="container h-100">
+        <div class="row align-items-center h-100 py-5">
+            <div class="col-lg-6 text-white">
+                <h1 class="display-3 fw-bold mb-4 animate-fade-in">
+                    Welcome to <br>
+                    <span style="color: #ffd700;">Ghazaly Restaurant</span>
+                </h1>
+                <p class="lead mb-4 fs-4">
+                    Experience the finest dining with our carefully crafted menu.
+                    Order online and enjoy fast delivery or pickup!
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <a asp-controller="Order" asp-action="Create" class="btn btn-warning btn-lg px-5 py-3 fw-bold">
+                            <i class="fas fa-user-plus me-2"></i>Oder Now
+                        </a>
+                        <a asp-controller="Order" asp-action="Index" class="btn btn-warning btn-lg px-5 py-3 fw-bold">
+                            <i class="fas fa-user-plus me-2"></i>My Orders 
+                        </a>
+                       
+                    }
+                    else
+                    {
+
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-warning btn-lg px-5 py-3 fw-bold">
+                            <i class="fas fa-user-plus me-2"></i>Get Started
+                        </a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-warning btn-lg px-5 py-3 fw-bold">
+                            <i class="fas fa-user-plus me-2"></i>Sign In
+                        </a>
+                      
+                    }
+                </div>
+
+                <!-- Stats -->
+                <div class="row mt-5">
+                    <div class="col-4">
+                        <h3 class="fw-bold mb-0">1000+</h3>
+                        <small>Happy Customers</small>
+                    </div>
+                    <div class="col-4">
+                        <h3 class="fw-bold mb-0">50+</h3>
+                        <small>Menu Items</small>
+                    </div>
+                    <div class="col-4">
+                        <h3 class="fw-bold mb-0">4.8★</h3>
+                        <small>Rating</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block text-center">
+                <div class="floating-animation">
+                    <i class="fas fa-pizza-slice" style="font-size: 300px; color: rgba(255,255,255,0.2);"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wave Shape -->
+    <div class="position-absolute bottom-0 start-0 w-100">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+            <path fill="#ffffff" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,112C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Why Choose Us?</h2>
+            <p class="text-muted fs-5">We provide the best food ordering experience</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center p-4 hover-lift">
+                    <div class="card-body">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-shipping-fast fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Fast Delivery</h4>
+                        <p class="text-muted">Get your food delivered hot and fresh within 30 minutes</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center p-4 hover-lift">
+                    <div class="card-body">
+                        <div class="feature-icon bg-success bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-leaf fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Fresh Ingredients</h4>
+                        <p class="text-muted">We use only the freshest and highest quality ingredients</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center p-4 hover-lift">
+                    <div class="card-body">
+                        <div class="feature-icon bg-warning bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-star fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Top Quality</h4>
+                        <p class="text-muted">Rated 4.8 stars by our satisfied customers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">How It Works</h2>
+            <p class="text-muted fs-5">Simple steps to get your favorite food</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-3 text-center">
+                <div class="position-relative mb-4">
+                    <div class="bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                        <span class="fs-1 fw-bold">1</span>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-3">Choose Your Meal</h5>
+                <p class="text-muted">Browse our extensive menu and pick your favorites</p>
+            </div>
+
+            <div class="col-md-3 text-center">
+                <div class="position-relative mb-4">
+                    <div class="bg-success bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                        <span class="fs-1 fw-bold">2</span>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-3">Place Order</h5>
+                <p class="text-muted">Add items to cart and complete your order</p>
+            </div>
+
+            <div class="col-md-3 text-center">
+                <div class="position-relative mb-4">
+                    <div class="bg-warning bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                        <span class="fs-1 fw-bold">3</span>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-3">We Prepare</h5>
+                <p class="text-muted">Our chefs prepare your meal with care</p>
+            </div>
+
+            <div class="col-md-3 text-center">
+                <div class="position-relative mb-4">
+                    <div class="bg-danger bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                        <span class="fs-1 fw-bold">4</span>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-3">Enjoy!</h5>
+                <p class="text-muted">Receive and enjoy your delicious meal</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Special Offers Section -->
+<section class="py-5 bg-dark text-white">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <i class="fas fa-gift fa-5x mb-4 text-warning"></i>
+                <h2 class="display-4 fw-bold mb-4">Special Offers</h2>
+                <h4 class="mb-3">🎉 Happy Hour: 3 PM - 5 PM</h4>
+                <p class="fs-5 mb-4">Get 20% off on all orders during happy hours!</p>
+                <h4 class="mb-3">💰 Bulk Discount</h4>
+                <p class="fs-5 mb-4">Orders over $100 get an automatic 10% discount!</p>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Orders" asp-action="Create" class="btn btn-warning btn-lg px-5 py-3">
+                        <i class="fas fa-shopping-cart me-2"></i>Order Now
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-warning btn-lg px-5 py-3">
+                        <i class="fas fa-user-plus me-2"></i>Sign Up to Order
+                    </a>
+                }
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-hamburger fa-10x text-warning opacity-25"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container py-5 text-center">
+        <h2 class="display-4 fw-bold mb-4">Ready to Order?</h2>
+        <p class="fs-4 mb-5">Join thousands of satisfied customers today!</p>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a asp-controller="Order" asp-action="Create" class="btn btn-warning btn-lg px-5 py-3 fw-bold">
+                <i class="fas fa-utensils me-2"></i>Start Ordering
+            </a>
+        }
+        else
+        {
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a asp-controller="Account" asp-action="Register" class="btn btn-warning btn-lg px-5 py-3 fw-bold">
+                    <i class="fas fa-user-plus me-2"></i>Sign Up Free
+                </a>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg px-5 py-3">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <style>
+        .hero-section {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .animate-fade-in {
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .floating-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @@keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .hover-lift:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
+            }
+
+        .feature-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .hover-lift:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .btn {
+            position: relative;
+            z-index: 1000;
+        }
+    </style>
+}

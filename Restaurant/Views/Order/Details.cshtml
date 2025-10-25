@@ -1,0 +1,246 @@
+﻿@using Models
+@model Order
+
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">
+                    <i class="fas fa-receipt me-2"></i>Order #@Model.Id
+                </h2>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+
+            <!-- Order Status Badge -->
+            <div class="mb-4">
+                @switch (Model.OrderStatus)
+                {
+                    case OrderStatus.Pending:
+                        <span class="badge bg-secondary fs-5 px-4 py-2">
+                            <i class="fas fa-clock me-2"></i>Pending
+                        </span>
+                        break;
+                    case OrderStatus.Preparing:
+                        <span class="badge bg-warning fs-5 px-4 py-2">
+                            <i class="fas fa-fire me-2"></i>Preparing
+                        </span>
+                        break;
+                    case OrderStatus.Ready:
+                        <span class="badge bg-success fs-5 px-4 py-2">
+                            <i class="fas fa-check-circle me-2"></i>Ready
+                        </span>
+                        break;
+                    case OrderStatus.Delivered:
+                        <span class="badge bg-info fs-5 px-4 py-2">
+                            <i class="fas fa-truck me-2"></i>Delivered
+                        </span>
+                        break;
+                    case OrderStatus.Cancelled:
+                        <span class="badge bg-danger fs-5 px-4 py-2">
+                            <i class="fas fa-times-circle me-2"></i>Cancelled
+                        </span>
+                        break;
+                }
+            </div>
+
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-md-7">
+                    <!-- Customer Information -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-user me-2"></i>Customer Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless mb-0">
+                                <tr>
+                                    <td class="text-muted" width="40%">
+                                        <i class="fas fa-user me-2"></i>Name:
+                                    </td>
+                                    <td class="fw-bold">@Model.CustomerName</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">
+                                        <i class="fas fa-phone me-2"></i>Phone:
+                                    </td>
+                                    <td class="fw-bold">@Model.CustomerPhone</td>
+                                </tr>
+                                @if (!string.IsNullOrEmpty(Model.CustomerEmail))
+                                {
+                                    <tr>
+                                        <td class="text-muted">
+                                            <i class="fas fa-envelope me-2"></i>Email:
+                                        </td>
+                                        <td>@Model.CustomerEmail</td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-shopping-cart me-2"></i>Order Items
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Item</th>
+                                            <th class="text-center">Quantity</th>
+                                            <th class="text-end">Price</th>
+                                            <th class="text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.OrderItems)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <strong>@item.MenuItem.Name</strong>
+                                                    @if (!string.IsNullOrEmpty(item.MenuItem.Description))
+                                                    {
+                                                        <br />
+                                                        <small class="text-muted">@item.MenuItem.Description</small>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-secondary">@item.Quantity</span>
+                                                </td>
+                                                <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                                                <td class="text-end fw-bold">@item.Subtotal.ToString("C")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-5">
+                    <!-- Order Info -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Order Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless mb-0">
+                                <tr>
+                                    <td class="text-muted" width="50%">Order Type:</td>
+                                    <td>
+                                        @if (Model.OrderType == OrderType.DineIn)
+                                        {
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-utensils me-1"></i>Dine In
+                                            </span>
+                                        }
+                                        else if (Model.OrderType == OrderType.Takeout)
+                                        {
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-shopping-bag me-1"></i>Takeout
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-motorcycle me-1"></i>Delivery
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Order Date:</td>
+                                    <td>@Model.OrderDate.ToString("dd/MM/yyyy hh:mm tt")</td>
+                                </tr>
+                                @if (Model.EstimatedDeliveryTime.HasValue)
+                                {
+                                    <tr>
+                                        <td class="text-muted">Est. Delivery:</td>
+                                        <td>@Model.EstimatedDeliveryTime.Value.ToString("hh:mm tt")</td>
+                                    </tr>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.DeliveryAddress))
+                                {
+                                    <tr>
+                                        <td class="text-muted">Address:</td>
+                                        <td>@Model.DeliveryAddress</td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Payment Summary -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-dollar-sign me-2"></i>Payment Summary
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless mb-0">
+                                <tr>
+                                    <td class="text-muted">Subtotal:</td>
+                                    <td class="text-end">@Model.Subtotal.ToString("C")</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Tax (8.5%):</td>
+                                    <td class="text-end">@Model.TaxAmount.ToString("C")</td>
+                                </tr>
+                                @if (Model.DiscountAmount > 0)
+                                {
+                                    <tr>
+                                        <td class="text-success">Discount:</td>
+                                        <td class="text-end text-success">-@Model.DiscountAmount.ToString("C")</td>
+                                    </tr>
+                                }
+                                <tr class="border-top">
+                                    <td class="fw-bold fs-5">Total:</td>
+                                    <td class="text-end fw-bold fs-5 text-success">
+                                        @Model.TotalAmount.ToString("C")
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    @if (Model.OrderStatus != OrderStatus.Ready &&
+                                        Model.OrderStatus != OrderStatus.Delivered &&
+                                        Model.OrderStatus != OrderStatus.Cancelled)
+                    {
+                        <div class="card shadow-sm mt-4">
+                            <div class="card-body text-center">
+                                <form asp-action="Cancel" asp-route-id="@Model.Id" method="post"
+                                      onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger w-100">
+                                        <i class="fas fa-times-circle me-2"></i>Cancel Order
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,381 @@
+﻿
+
+
+@using Models
+@model List<MenuItem>
+@{
+    ViewData["Title"] = "Getall";
+}
+
+<div class="container mt-4">
+
+    <!-- ================ Header Section ================ -->
+    <div class="card shadow-lg border-0 mb-4">
+        <div class="card-header bg-gradient text-white py-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="mb-0">
+                        <i class="bi bi-basket3-fill"></i> Menu Items
+                    </h2>
+                    <p class="mb-0 mt-2 opacity-75">Manage your restaurant menu items</p>
+                </div>
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <a asp-action="New" class="btn btn-light btn-lg shadow-sm">
+                            <i class="bi bi-plus-circle-fill"></i> Add Menu Item
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ================ Filter Section ================ -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold mb-2">
+                        <i class="bi bi-funnel-fill text-primary me-2"></i>Filter by Category
+                    </label>
+                    <select id="categoryFilter" class="form-select form-select-lg">
+                        <option value="">All Categories</option>
+                        @if (ViewBag.Categories != null)
+                        {
+                            @foreach (var category in ViewBag.Categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 mt-3 mt-md-0">
+                    <label class="form-label fw-bold mb-2">
+                        <i class="bi bi-search text-success me-2"></i>Search Items
+                    </label>
+                    <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="Search by name...">
+                </div>
+                <div class="col-md-4 mt-3 mt-md-0 text-md-end">
+                    <label class="form-label fw-bold mb-2 d-block">&nbsp;</label>
+                    <button id="resetFilter" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-arrow-clockwise"></i> Reset Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================ Items Count ================ -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <span class="badge bg-primary fs-6 px-4 py-2">
+                <i class="bi bi-list-check"></i> Total Items: <span id="totalCount">@Model.Count</span>
+            </span>
+            <span class="badge bg-info fs-6 px-4 py-2">
+                <i class="bi bi-eye-fill"></i> Showing: <span id="visibleCount">@Model.Count</span>
+            </span>
+        </div>
+
+        <!-- ================ Menu Items Cards Grid ================ -->
+        <div class="row g-4" id="menuItemsGrid">
+            @foreach (var item in Model)
+            {
+                <div class="col-lg-4 col-md-6 menu-item" data-category="@item.CategoryId" data-name="@item.Name.ToLower()">
+                    <div class="card menu-item-card shadow-sm border-0 h-100">
+
+                        <!-- Image Section with Badges -->
+                        <div class="card-img-top-wrapper position-relative">
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="~/images/@item.ImageUrl"
+                                     class="card-img-top"
+                                     alt="@item.Name"
+                                     style="height: 220px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <div class="bg-gradient-light d-flex align-items-center justify-content-center"
+                                     style="height: 220px;">
+                                    <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                                </div>
+                            }
+
+                            <!-- Price Badge (Top Right) -->
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <span class="badge bg-success fs-5 shadow">
+                                    @item.Price.ToString("C")
+                                </span>
+                            </div>
+
+                            <!-- Category Badge (Top Left) -->
+                            @if (item.Category != null)
+                            {
+                                <div class="position-absolute top-0 start-0 m-3">
+                                    <span class="badge bg-primary shadow">
+                                        @item.Category.Name
+                                    </span>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body d-flex flex-column">
+
+                            <!-- Item Name -->
+                            <h5 class="card-title fw-bold text-dark mb-2">
+                                <i class="bi bi-award-fill text-warning me-1"></i>
+                                @item.Name
+                            </h5>
+
+                            <!-- Description -->
+                            <p class="card-text text-muted mb-3 flex-grow-1">
+                                @if (!string.IsNullOrEmpty(item.Description))
+                                {
+                                    @(item.Description.Length > 80
+                                                            ? item.Description.Substring(0, 80) + "..."
+                                                            : item.Description)
+                                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic">No description available</span>
+                                }
+                            </p>
+
+                            <!-- Info Boxes (Prep Time & Quantity) -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <div class="info-box bg-light p-2 rounded text-center">
+                                        <i class="bi bi-clock-fill text-primary d-block mb-1"></i>
+                                        <small class="text-muted">@item.PreparationTimeMinutes min</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="info-box bg-light p-2 rounded text-center">
+                                        <i class="bi bi-box-seam-fill text-warning d-block mb-1"></i>
+                                        <small class="text-muted">Qty: @item.quanty</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Availability Status -->
+                            <div class="mb-3">
+                                @if (item.quanty > 0)
+                                {
+                                    <div class="alert alert-success py-2 mb-0 d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                        <small class="mb-0"><strong>Available</strong></small>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-danger py-2 mb-0 d-flex align-items-center">
+                                        <i class="bi bi-x-circle-fill me-2"></i>
+                                        <small class="mb-0"><strong>Out of Stock</strong></small>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Action Buttons -->
+                           
+                            <div class="d-grid gap-2">
+              
+                                   <a asp-action="Details"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-info text-white">
+                                    <i class="bi bi-eye-fill"></i> Details
+                               
+                                </a>
+                                @if(User.IsInRole("Admin"))
+                                {
+                                <div class="btn-group" role="group">
+                                    <a asp-action="Edit"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-warning">
+                                        <i class="bi bi-pencil-fill"></i> Edit
+                                    </a>
+                                    <a asp-action="Delete"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-danger">
+                                        <i class="bi bi-trash-fill"></i> Delete
+                                    </a>
+                                    
+                                </div>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- ================ No Results Message ================ -->
+        <div id="noResults" class="card shadow-lg border-0 mt-4" style="display: none;">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-search text-muted" style="font-size: 5rem;"></i>
+                <h3 class="text-muted mt-4 mb-2">No Items Found</h3>
+                <p class="text-muted mb-4">Try adjusting your filters</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- ================ Empty State ================ -->
+        <div class="card shadow-lg border-0">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox text-muted" style="font-size: 5rem;"></i>
+                <h3 class="text-muted mt-4 mb-2">No Menu Items Found</h3>
+                <p class="text-muted mb-4">Start building your menu by adding your first delicious item</p>
+                <a asp-action="New" class="btn btn-success btn-lg">
+                    <i class="bi bi-plus-circle-fill"></i> Add First Menu Item
+                </a>
+            </div>
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        // ================ Filter Functionality ================
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            const searchInput = document.getElementById('searchInput');
+            const resetButton = document.getElementById('resetFilter');
+            const menuItems = document.querySelectorAll('.menu-item');
+            const visibleCount = document.getElementById('visibleCount');
+            const noResults = document.getElementById('noResults');
+
+            function filterItems() {
+                const selectedCategory = categoryFilter.value;
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                let visibleItems = 0;
+
+                menuItems.forEach(item => {
+                    const itemCategory = item.getAttribute('data-category');
+                    const itemName = item.getAttribute('data-name');
+
+                    const categoryMatch = !selectedCategory || itemCategory === selectedCategory;
+                    const searchMatch = !searchTerm || itemName.includes(searchTerm);
+
+                    if (categoryMatch && searchMatch) {
+                        item.style.display = 'block';
+                        visibleItems++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                // Update visible count
+                if (visibleCount) {
+                    visibleCount.textContent = visibleItems;
+                }
+
+                // Show/hide no results message
+                if (noResults) {
+                    noResults.style.display = visibleItems === 0 ? 'block' : 'none';
+                }
+            }
+
+            // Event listeners
+            if (categoryFilter) {
+                categoryFilter.addEventListener('change', filterItems);
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', filterItems);
+            }
+
+            if (resetButton) {
+                resetButton.addEventListener('click', function() {
+                    categoryFilter.value = '';
+                    searchInput.value = '';
+                    filterItems();
+                });
+            }
+        });
+    </script>
+
+    <style>
+        /* ================ Gradients ================ */
+        .bg-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .bg-gradient-light {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        /* ================ Card Styles ================ */
+        .card {
+            border-radius: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .menu-item-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+        }
+
+        .card-img-top {
+            border-radius: 15px 15px 0 0;
+        }
+
+        /* ================ Info Box Styles ================ */
+        .info-box {
+            transition: all 0.3s ease;
+        }
+
+            .info-box:hover {
+                background-color: #e9ecef !important;
+                transform: scale(1.05);
+            }
+
+        /* ================ Badge & Button Styles ================ */
+        .badge {
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn {
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+            .btn:hover {
+                transform: translateY(-2px);
+            }
+
+        /* ================ Alert Styles ================ */
+        .alert {
+            border: none;
+            font-size: 0.875rem;
+        }
+
+        /* ================ Typography ================ */
+        .card-title {
+            font-size: 1.25rem;
+        }
+
+        .card-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* ================ Filter Styles ================ */
+        .form-select:focus, .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+        }
+
+        /* ================ Animation ================ */
+        .menu-item {
+            transition: all 0.3s ease;
+        }
+
+        /* ================ Responsive Design ================ */
+       
+    </style>
+}

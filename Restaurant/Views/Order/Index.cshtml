@@ -1,0 +1,838 @@
+﻿@using Models
+
+@model IEnumerable<Order>
+
+@{
+    ViewData["Title"] = "Orders";
+    var isAdminView = ViewBag.IsAdminView as bool? ?? false;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h2 class="fw-bold mb-2 d-flex align-items-center">
+                <span class="icon-wrapper me-3">
+                    <i class="fas fa-receipt"></i>
+                </span>
+                @if (isAdminView)
+                {
+                    <text>All Orders Management</text>
+                }
+                else
+                {
+                    <text>My Orders</text>
+                }
+            </h2>
+            @if (!isAdminView)
+            {
+                <p class="text-muted mb-0">Track and manage your orders</p>
+            }
+        </div>
+        <div class="col-md-6 text-end">
+            @if (!isAdminView)
+            {
+                <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">
+                    <i class="fas fa-plus me-2"></i>Place New Order
+                </a>
+            }
+            else
+            {
+                <a asp-action="Create" class="btn btn-primary me-2 shadow-sm">
+                    <i class="fas fa-plus me-2"></i>New Order
+                </a>
+                <div class="btn-group shadow-sm">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-filter me-2"></i>Filter Orders
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item active" href="#" onclick="filterByStatus('all')">
+                                <i class="fas fa-list me-2"></i>All Orders
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="filterByStatus('Pending')">
+                                <i class="fas fa-clock me-2 text-secondary"></i>Pending
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="filterByStatus('Preparing')">
+                                <i class="fas fa-fire me-2 text-warning"></i>Preparing
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="filterByStatus('Ready')">
+                                <i class="fas fa-check me-2 text-success"></i>Ready
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="filterByStatus('Delivered')">
+                                <i class="fas fa-truck me-2 text-info"></i>Delivered
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="filterByStatus('Cancelled')">
+                                <i class="fas fa-times me-2 text-danger"></i>Cancelled
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong>Success!</strong> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Error!</strong> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (isAdminView)
+    {
+        <!-- Admin Statistics Cards -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-3">
+                <div class="stats-card card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="stats-icon mb-3 bg-primary-subtle">
+                            <i class="fas fa-shopping-bag text-primary"></i>
+                        </div>
+                        <h3 class="stats-number text-primary mb-1">@Model.Count()</h3>
+                        <p class="stats-label text-muted mb-0">Total Orders</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="stats-icon mb-3 bg-warning-subtle">
+                            <i class="fas fa-fire text-warning"></i>
+                        </div>
+                        <h3 class="stats-number text-warning mb-1">@Model.Count(o => o.OrderStatus == OrderStatus.Pending || o.OrderStatus == OrderStatus.Preparing)</h3>
+                        <p class="stats-label text-muted mb-0">Active Orders</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="stats-icon mb-3 bg-success-subtle">
+                            <i class="fas fa-dollar-sign text-success"></i>
+                        </div>
+                        <h3 class="stats-number text-success mb-1">@ViewBag.MonthlyRevenue.ToString("C")</h3>
+                        <p class="stats-label text-muted mb-0">Monthly Revenue</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="stats-icon mb-3 bg-info-subtle">
+                            <i class="fas fa-calendar-day text-info"></i>
+                        </div>
+                        <h3 class="stats-number text-info mb-1">@Model.Where(o => o.OrderDate.Date == DateTime.Today).Count()</h3>
+                        <p class="stats-label text-muted mb-0">Today's Orders</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Table View -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-list me-2 text-primary"></i>Orders List
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="ordersTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="fw-semibold">Order #</th>
+                                <th class="fw-semibold">Customer</th>
+                                <th class="fw-semibold">Phone</th>
+                                <th class="fw-semibold">Type</th>
+                                <th class="fw-semibold">Status</th>
+                                <th class="fw-semibold">Items</th>
+                                <th class="fw-semibold">Date & Time</th>
+                                <th class="fw-semibold">Total</th>
+                                <th class="fw-semibold text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+                            {
+                                <tr data-status="@order.OrderStatus" class="order-row">
+                                    <td>
+                                        <span class="fw-bold text-primary">#@order.Id</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="user-avatar me-2">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">@order.CustomerName</div>
+                                                @if (!string.IsNullOrEmpty(order.CustomerEmail))
+                                                {
+                                                    <small class="text-muted">@order.CustomerEmail</small>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-phone text-muted me-1"></i>
+                                        <span>@order.CustomerPhone</span>
+                                    </td>
+                                    <td>
+                                        @if (order.OrderType == OrderType.DineIn)
+                                        {
+                                            <span class="badge rounded-pill bg-info">
+                                                <i class="fas fa-utensils me-1"></i>Dine In
+                                            </span>
+                                        }
+                                        else if (order.OrderType == OrderType.Takeout)
+                                        {
+                                            <span class="badge rounded-pill bg-warning text-dark">
+                                                <i class="fas fa-shopping-bag me-1"></i>Takeout
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill bg-primary">
+                                                <i class="fas fa-motorcycle me-1"></i>Delivery
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @switch (order.OrderStatus)
+                                        {
+                                            case OrderStatus.Pending:
+                                                <span class="badge rounded-pill bg-secondary">
+                                                    <i class="fas fa-clock me-1"></i>Pending
+                                                </span>
+                                                break;
+                                            case OrderStatus.Preparing:
+                                                <span class="badge rounded-pill bg-warning text-dark">
+                                                    <i class="fas fa-fire me-1"></i>Preparing
+                                                </span>
+                                                break;
+                                            case OrderStatus.Ready:
+                                                <span class="badge rounded-pill bg-success">
+                                                    <i class="fas fa-check me-1"></i>Ready
+                                                </span>
+                                                break;
+                                            case OrderStatus.Delivered:
+                                                <span class="badge rounded-pill bg-info">
+                                                    <i class="fas fa-truck me-1"></i>Delivered
+                                                </span>
+                                                break;
+                                            case OrderStatus.Cancelled:
+                                                <span class="badge rounded-pill bg-danger">
+                                                    <i class="fas fa-times me-1"></i>Cancelled
+                                                </span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="fas fa-utensils me-1"></i>@order.OrderItems.Count()
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">@order.OrderDate.ToString("dd/MM/yyyy")</div>
+                                        <small class="text-muted">
+                                            <i class="far fa-clock me-1"></i>@order.OrderDate.ToString("hh:mm tt")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">@order.TotalAmount.ToString("C")</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@order.Id"
+                                               class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (order.OrderStatus == OrderStatus.Pending || order.OrderStatus == OrderStatus.Preparing)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-warning"
+                                                        title="Update Status" data-bs-toggle="modal"
+                                                        data-bs-target="#statusModal@(order.Id)">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            }
+                                            @if (order.OrderStatus != OrderStatus.Ready &&
+                                                                                order.OrderStatus != OrderStatus.Delivered &&
+                                                                                order.OrderStatus != OrderStatus.Cancelled)
+                                            {
+                                                <form asp-action="Cancel" asp-route-id="@order.Id"
+                                                      method="post" class="d-inline"
+                                                      onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel Order">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No orders found</h5>
+                            <p class="text-muted">Orders will appear here once customers place them.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Status Update Modals -->
+        @foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+        {
+            @if (order.OrderStatus == OrderStatus.Pending || order.OrderStatus == OrderStatus.Preparing)
+            {
+                <div class="modal fade" id="statusModal@(order.Id)" tabindex="-1" aria-labelledby="statusModalLabel@(order.Id)" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title" id="statusModalLabel@(order.Id)">
+                                    <i class="fas fa-edit me-2"></i>Update Order Status
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form asp-action="UpdateStatus" asp-route-id="@order.Id" method="post">
+                                @Html.AntiForgeryToken()
+                                <div class="modal-body p-4">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Order #@order.Id</label>
+                                        <p class="text-muted">Customer: @order.CustomerName</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="orderStatus@(order.Id)" class="form-label fw-semibold">
+                                            <i class="fas fa-tasks me-2"></i>New Status
+                                        </label>
+                                        <select name="newStatus" id="orderStatus@(order.Id)" class="form-select form-select-lg" required>
+                                            <option value="">-- Select Status --</option>
+                                            @if (order.OrderStatus == OrderStatus.Pending)
+                                            {
+                                                <option value="@((int)OrderStatus.Preparing)">
+                                                    🔥 Preparing
+                                                </option>
+                                            }
+                                            @if (order.OrderStatus == OrderStatus.Preparing || order.OrderStatus == OrderStatus.Pending)
+                                            {
+                                                <option value="@((int)OrderStatus.Ready)">
+                                                    ✅ Ready
+                                                </option>
+                                            }
+                                            @if (order.OrderType == OrderType.Delivery)
+                                            {
+                                                <option value="@((int)OrderStatus.Delivered)">
+                                                    🚚 Delivered
+                                                </option>
+                                            }
+                                            <option value="@((int)OrderStatus.Cancelled)">
+                                                ❌ Cancelled
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="alert alert-info border-0 d-flex align-items-center">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <small>Update the order status to keep customers informed</small>
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0 bg-light">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-check me-2"></i>Update Status
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    }
+    else
+    {
+        <!-- Customer Statistics Cards -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-4">
+                <div class="stats-card card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="stats-icon mb-3 bg-primary-subtle">
+                            <i class="fas fa-shopping-bag text-primary"></i>
+                        </div>
+                        <h3 class="stats-number text-primary mb-1">@Model.Count()</h3>
+                        <p class="stats-label text-muted mb-0">Total Orders</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="stats-icon mb-3 bg-success-subtle">
+                            <i class="fas fa-dollar-sign text-success"></i>
+                        </div>
+                        <h3 class="stats-number text-success mb-1">@ViewBag.UserMonthlyRevenue.ToString("C")</h3>
+                        <p class="stats-label text-muted mb-0">Monthly Spending</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="stats-icon mb-3 bg-warning-subtle">
+                            <i class="fas fa-fire text-warning"></i>
+                        </div>
+                        <h3 class="stats-number text-warning mb-1">@Model.Count(o => o.OrderStatus == OrderStatus.Pending || o.OrderStatus == OrderStatus.Preparing)</h3>
+                        <p class="stats-label text-muted mb-0">Active Orders</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer View: Card-Based Layout -->
+        @if (Model.Any())
+        {
+            <div class="row g-4">
+                @foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="order-card card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+                                <h5 class="mb-0 fw-bold text-primary">
+                                    <i class="fas fa-receipt me-2"></i>Order #@order.Id
+                                </h5>
+                                @switch (order.OrderStatus)
+                                {
+                                    case OrderStatus.Pending:
+                                        <span class="badge rounded-pill bg-secondary px-3 py-2">Pending</span>
+                                        break;
+                                    case OrderStatus.Preparing:
+                                        <span class="badge rounded-pill bg-warning text-dark px-3 py-2">Preparing</span>
+                                        break;
+                                    case OrderStatus.Ready:
+                                        <span class="badge rounded-pill bg-success px-3 py-2">Ready</span>
+                                        break;
+                                    case OrderStatus.Delivered:
+                                        <span class="badge rounded-pill bg-info px-3 py-2">Delivered</span>
+                                        break;
+                                    case OrderStatus.Cancelled:
+                                        <span class="badge rounded-pill bg-danger px-3 py-2">Cancelled</span>
+                                        break;
+                                }
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="mb-3">
+                                    @if (order.OrderType == OrderType.DineIn)
+                                    {
+                                        <span class="badge rounded-pill bg-info px-3 py-2">
+                                            <i class="fas fa-utensils me-1"></i>Dine In
+                                        </span>
+                                    }
+                                    else if (order.OrderType == OrderType.Takeout)
+                                    {
+                                        <span class="badge rounded-pill bg-warning text-dark px-3 py-2">
+                                            <i class="fas fa-shopping-bag me-1"></i>Takeout
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge rounded-pill bg-primary px-3 py-2">
+                                            <i class="fas fa-motorcycle me-1"></i>Delivery
+                                        </span>
+                                    }
+                                </div>
+
+                                <div class="info-item mb-3">
+                                    <i class="fas fa-calendar text-primary me-2"></i>
+                                    <span class="text-muted">@order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                </div>
+
+                                @if (order.EstimatedDeliveryTime.HasValue &&
+                                                    (order.OrderStatus == OrderStatus.Pending || order.OrderStatus == OrderStatus.Preparing))
+                                {
+                                    <div class="info-item mb-3">
+                                        <i class="fas fa-clock text-info me-2"></i>
+                                        <span class="text-info fw-semibold">
+                                            Est. @order.EstimatedDeliveryTime.Value.ToString("hh:mm tt")
+                                        </span>
+                                    </div>
+                                }
+
+                                <hr class="my-3">
+
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="fw-semibold text-dark">Order Items</span>
+                                        <span class="badge bg-light text-dark border">
+                                            @order.OrderItems.Count() items
+                                        </span>
+                                    </div>
+                                    <ul class="list-unstyled mb-0 items-list">
+                                        @foreach (var item in order.OrderItems.Take(3))
+                                        {
+                                            <li class="mb-2">
+                                                <i class="fas fa-circle text-primary me-2" style="font-size: 6px;"></i>
+                                                <span class="fw-semibold">@item.Quantity</span> × @item.MenuItem.Name
+                                            </li>
+                                        }
+                                        @if (order.OrderItems.Count() > 3)
+                                        {
+                                            <li class="text-muted">
+                                                <i class="fas fa-ellipsis-h me-2"></i>
+                                                @(order.OrderItems.Count() - 3) more items
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+
+                                <div class="total-section bg-light rounded p-3 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">Total Amount</span>
+                                        <h4 class="text-success mb-0 fw-bold">@order.TotalAmount.ToString("C")</h4>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <a asp-action="Details" asp-route-id="@order.Id"
+                                       class="btn btn-primary shadow-sm">
+                                        <i class="fas fa-eye me-2"></i>View Details
+                                    </a>
+                                    @if (order.OrderStatus != OrderStatus.Ready &&
+                                                            order.OrderStatus != OrderStatus.Delivered &&
+                                                            order.OrderStatus != OrderStatus.Cancelled)
+                                    {
+                                        <form asp-action="Cancel" asp-route-id="@order.Id" method="post"
+                                              onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger w-100">
+                                                <i class="fas fa-times-circle me-2"></i>Cancel Order
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-top py-3">
+                                <small class="text-muted d-flex align-items-center">
+                                    @if (order.OrderStatus == OrderStatus.Delivered)
+                                    {
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <span>Order Completed Successfully</span>
+                                    }
+                                    else if (order.OrderStatus == OrderStatus.Cancelled)
+                                    {
+                                        <i class="fas fa-times-circle text-danger me-2"></i>
+                                        <span>Order has been Cancelled</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-spinner fa-pulse text-info me-2"></i>
+                                        <span>Order is being processed</span>
+                                    }
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <div class="empty-state-customer">
+                        <div class="empty-icon mb-4">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h3 class="fw-bold mb-3">No Orders Yet</h3>
+                        <p class="text-muted mb-4 fs-5">You haven't placed any orders. Start ordering delicious food now!</p>
+                        <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm px-5">
+                            <i class="fas fa-plus me-2"></i>Place Your First Order
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function filterByStatus(status) {
+            const rows = document.querySelectorAll('#ordersTable tbody tr');
+            const dropdownItems = document.querySelectorAll('.dropdown-menu .dropdown-item');
+
+            // Update active state
+            dropdownItems.forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+
+            rows.forEach(row => {
+                if (status === 'all' || row.dataset.status === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Smooth animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Card hover effects
+            const orderCards = document.querySelectorAll('.order-card');
+            orderCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px)';
+                    this.style.transition = 'all 0.3s ease';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Stats card animations
+            const statsCards = document.querySelectorAll('.stats-card');
+            statsCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05)';
+                    this.style.transition = 'all 0.3s ease';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            // Row hover effect
+            const rows = document.querySelectorAll('.order-row');
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#f8f9fa';
+                    this.style.transition = 'background-color 0.2s ease';
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '';
+                });
+            });
+        });
+    </script>
+
+    <style>
+        /* Icon Wrapper */
+        .icon-wrapper {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Order Cards */
+        .order-card {
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+            .order-card:hover {
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+            }
+
+            .order-card .card-header {
+                border-bottom: 2px solid #f0f0f0;
+            }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .items-list li {
+            padding: 0.25rem 0;
+        }
+
+        .total-section {
+            border: 2px dashed #e0e0e0;
+        }
+
+        /* User Avatar */
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        /* Empty States */
+        .empty-state i,
+        .empty-state-customer .empty-icon i {
+            opacity: 0.3;
+        }
+
+        .empty-state-customer .empty-icon i {
+            font-size: 5rem;
+            color: #667eea;
+        }
+
+        /* Table Improvements */
+        .table thead th {
+            border-bottom: 2px solid #dee2e6;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        /* Badges */
+        .badge {
+            font-weight: 500;
+            font-size: 0.85rem;
+            padding: 0.5em 0.8em;
+        }
+
+        /* Buttons */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+
+            .btn-primary:hover {
+                background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+
+        .btn-outline-primary:hover,
+        .btn-outline-danger:hover,
+        .btn-outline-warning:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Cards */
+        .card {
+            border-radius: 15px;
+        }
+
+        /* Dropdown */
+        .dropdown-menu {
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+
+        .dropdown-item {
+            padding: 0.7rem 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+            .dropdown-item:hover {
+                background-color: #f8f9fa;
+                padding-left: 1.5rem;
+            }
+
+            .dropdown-item.active {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+        /* Alerts */
+        .alert {
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            border-left-color: #198754;
+        }
+
+        .alert-danger {
+            border-left-color: #dc3545;
+        }
+
+       
+
+        .icon-wrapper {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+        }
+
+        }
+    </style>
+}
