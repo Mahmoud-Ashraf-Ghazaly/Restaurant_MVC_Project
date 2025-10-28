@@ -22,21 +22,7 @@ namespace Applications.MenuCategory_servic
         public async Task<List<MenuCategory>> GetAll()
         {
             var categories = await categoryRepo.GetAll();
-            //var categoryDtos = categories.Select(category => new MenuCategory
-            //{
-            //    Id = category.Id,
-            //    Name = category.Name,
-            //    Description = category.Description,
-            //    MenuItems = category.MenuItems?.Select(item => new MenuItem
-            //    {
-            //        Id = item.Id,
-            //        Name = item.Name,
-            //        Description = item.Description,
-            //        Price = item.Price,
-            //        ImageUrl = item.ImageUrl,
-            //        CategoryId = item.CategoryId
-            //    }).ToList() ?? new List<MenuItem>()
-            //}).ToList();
+          
             return categories;
         }
         public async Task<MenuCategory?> GetById(int id)
@@ -46,21 +32,7 @@ namespace Applications.MenuCategory_servic
             {
                 return null;
             }
-            //var categoryDto = new MenuCategory()
-            //{
-            //    Id = menuCategory.Id,
-            //    Name = menuCategory.Name,
-            //    Description = menuCategory.Description,
-            //    MenuItems = menuCategory.MenuItems?.Select(item => new MenuItem
-            //    {
-            //        Id = item.Id,
-            //        Name = item.Name,
-            //        Description = item.Description,
-            //        Price = item.Price,
-            //        ImageUrl = item.ImageUrl,
-            //        CategoryId = item.CategoryId
-            //    }).ToList() ?? new List<MenuItem>()
-            //};
+           
             return menuCategory;
         }
 

@@ -93,11 +93,7 @@ namespace Applications.MenuCategory_servic
             return result;
         }
 
-        //public async Task<List<IdentityRole>> GetAllRolesAsync()
-        //{
-        //    var roles = await roleManager.Roles.ToListAsync();
-        //    return roles;
-        //}
+       
 
         public async Task<IdentityResult> AddToRoleAsync(LoginDto userDto, string roleName)
         {

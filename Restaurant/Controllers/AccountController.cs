@@ -64,30 +64,24 @@ namespace Restaurant.Controllers
 
             if (result.Succeeded)
             {
-                // نحصل على المستخدم بعد تسجيل الدخول باستخدام البريد الإلكتروني من LoginDto
                 var user = await _userManager.FindByNameAsync(userName: userDto.userName);
 
-                // نجلب الأدوار المرتبطة بالمستخدم
                 var roles = await _userManager.GetRolesAsync(user);
 
-                // نتحقق من الدور
                 if (roles.Contains("Admin"))
                 {
                     return RedirectToAction("GetAll", "MenuItem");
                 }
 
-                // لو مستخدم عادي
                 return RedirectToAction("Index", "Home");
             }
 
-            // لو الحساب مقفول
             if (result.IsLockedOut)
             {
                 ModelState.AddModelError("", "Account locked. Try again later.");
                 return View(userDto);
             }
 
-            // لو بيانات خاطئة
             ModelState.AddModelError("", "User name or password is incorrect.");
             return View(userDto);
         }

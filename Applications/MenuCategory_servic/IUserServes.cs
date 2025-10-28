@@ -14,9 +14,9 @@ namespace Applications.MenuCategory_servic
         public Task<SignInResult> SignInAsync(LoginDto userDto);
         public Task SignOutAsync();
 
-        //public Task<SignInResult> ResetPasswordAsync();
+       
         public Task<IdentityResult> CreateRoleAsync(RoleDto role);
-        //public Task<List<IdentityRole>> GetAllRolesAsync();
+       
         public Task<IdentityResult> AddToRoleAsync(LoginDto userDto, string roleName);
 
     }

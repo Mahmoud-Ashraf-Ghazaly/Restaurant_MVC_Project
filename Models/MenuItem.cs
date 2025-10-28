@@ -35,8 +35,7 @@ namespace Models
         [Range(0,100)]
         public int PreparationTimeMinutes { get; set; }
 
-        //[Display(Name = "Available")]
-        //public bool IsAvailable { get; set; } = true;
+       
         [Range(0,1000)]
         [Required]
         public int quanty { get; set; }
@@ -52,8 +51,7 @@ namespace Models
         [Display(Name = "Daily Order Count")]
         public int DailyOrderCount { get; set; } = 0;
 
-        //[Display(Name = "Last Reset Date")]
-        //public DateTime LastResetDate { get; set; } = DateTime.Today;
+       
 
         public  MenuCategory? Category { get; set; }
 

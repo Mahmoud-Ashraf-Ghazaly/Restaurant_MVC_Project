@@ -34,11 +34,7 @@ namespace Infrastructure.Repo
             var item = await context.MenuItems.FirstOrDefaultAsync(c => c.Name==name);
             return item;
         }
-        //public async Task<List<MenuItem>> GetListByName(string name)
-        //{
-        //    var items = await context.MenuItems.Where(i => i.Name.Contains(name)).ToListAsync();
-        //    return items;
-        //}
+     
         public async Task Create(MenuItem item)
         {
             await context.MenuItems.AddAsync(item);

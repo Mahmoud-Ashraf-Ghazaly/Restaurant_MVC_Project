@@ -65,7 +65,6 @@ namespace Restaurant.Controllers
             {
                 return NotFound();
             }
-            //await menuCategoryservis.Delete(id);
             return View(result);
         }
         [HttpPost]
